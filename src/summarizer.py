@@ -1,20 +1,22 @@
+"""
+Module de résumé d'articles sportifs en français.
 
-#Module de résumé d'articles sportifs en français.
-
-#2 Modele a utiliser  :
-# MT5Summarizer : mT5 multilingue fine-tuné sur XL-Sum (baseline + cible du fine-tuning)
-# LLMSummarizer : CroissantLLM via prompting (LLM bilingue FR/EN open-source)
-
+2 modèles à utiliser :
+- MT5Summarizer : mT5-small (Google) — utilisé en version vanilla et fine-tuné
+- LLMSummarizer : CroissantLLM via prompting (LLM bilingue FR/EN open-source)
+"""
 
 import torch
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, AutoModelForCausalLM
 
 
-# Modèle de résumé multilingue, pré-entraîné sur XL-Sum (BBC News, 45 langues)
-# Paper : ACL 2021 — csebuetnlp (Bangladesh University of Eng. and Tech.)
-DEFAULT_MODEL = "csebuetnlp/mT5_multilingual_XLSum"
+# Modèle de base : mT5-small officiel de Google (300M params, multilingue)
+DEFAULT_MODEL = "google/mt5-small"
 
-# LLM open-source bilingue FR/EN, instruction-tuned, léger (1.3B)
+# Notre modèle fine-tuné sur MLSUM-sport (hébergé sur HuggingFace Hub sur mon profil ArcSin720)
+FINETUNED_MODEL = "ArcSin720/mt5-sport-finetuned"
+
+# LLM open-source bilingue FR/EN
 DEFAULT_LLM = "croissantllm/CroissantLLMChat-v0.1"
 
 
@@ -28,10 +30,10 @@ def get_device() -> str:
 
 
 class MT5Summarizer:
-    
-    #Résumeur basé sur mT5 multilingue .
-    #Sert à la fois de baseline et de modèle à fine-tuner sur MLSUM-sport.
-    
+    """
+    Résumeur basé sur mT5-small.
+    Peut être chargé en version vanilla (Google) ou fine-tunée (notre modèle).
+    """
 
     def __init__(self, model_name: str = DEFAULT_MODEL, device: str = None):
         self.model_name = model_name
@@ -46,13 +48,14 @@ class MT5Summarizer:
     def summarize(
         self,
         text: str,
-        max_source_length: int = 512,
+        max_source_length: int = 384,
         max_target_length: int = 64,
         num_beams: int = 4,
     ) -> str:
-        """Génère un résumé pour un article donné."""
+        #Génère un résumé pour un article donné
+        # Préfixe "summarize: "
         inputs = self.tokenizer(
-            text,
+            "summarize: " + text,
             max_length=max_source_length,
             truncation=True,
             return_tensors="pt",
@@ -72,7 +75,7 @@ class MT5Summarizer:
 
 
 class LLMSummarizer:
-    #Résumeur basé sur CroissantLLM (1.3B de parametre) avec prompting
+    #Résumeur basé sur CroissantLLM (1.3B params) avec prompt
 
     PROMPT_TEMPLATE = (
         "<|im_start|>system\n"
