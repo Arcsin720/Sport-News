@@ -6,11 +6,11 @@
 
 Projet réalisé dans le cadre du cours **Large Language Models** (M2 Data Science & IA, NEXA).
 
-## 🎯 Problématique
+## Problématique
 
-Est-ce qu'un modèle seq2seq spécialisé fine-tuné sur un domaine restreint (sport) peut dépasser les performances d'un LLM généraliste de dernière génération sur la tâche de résumé en français ?
+Est-ce qu'un modèle seq2seq spécialisé fine-tuné sur un domaine restreint (sport) peut dépasser les performances d'un LLM généraliste de dernière génération sur la tâche de résumé en français des article de sports ?
 
-## 🧪 Approche
+## Approche
 
 Comparaison de trois modèles sur le dataset **MLSUM-FR** filtré sur les topics sportifs :
 
