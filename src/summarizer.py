@@ -1,64 +1,56 @@
+
+#Module de résumé d'articles sportifs en français.
+
+#2 Modele a utiliser  :
+# MT5Summarizer : mT5 multilingue fine-tuné sur XL-Sum (baseline + cible du fine-tuning)
+# LLMSummarizer : CroissantLLM via prompting (LLM bilingue FR/EN open-source)
+
+
 import torch
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
-from transformers import AutoModelForCausalLM
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, AutoModelForCausalLM
 
 
-# Modèle BARThez déjà fine-tuné 
-# On part de ce modèle pour la baseline, et on le fine-tunera pour le sport egalement 
-DEFAULT_MODEL = "moussaKam/barthez-orangesum-abstract"
-# LLM open-source bilingue FR/EN, avec prompting
+# Modèle de résumé multilingue, pré-entraîné sur XL-Sum (BBC News, 45 langues)
+# Paper : ACL 2021 — csebuetnlp (Bangladesh University of Eng. and Tech.)
+DEFAULT_MODEL = "csebuetnlp/mT5_multilingual_XLSum"
+
+# LLM open-source bilingue FR/EN, instruction-tuned, léger (1.3B)
 DEFAULT_LLM = "croissantllm/CroissantLLMChat-v0.1"
 
 
 def get_device() -> str:
-
-    #Détecte le meilleur device disponible. 
-
-    if torch.backends.mps.is_available():
-        return "mps"
-    elif torch.cuda.is_available():
+    """Détecte le meilleur device disponible (cuda > mps > cpu)."""
+    if torch.cuda.is_available():
         return "cuda"
+    elif torch.backends.mps.is_available():
+        return "mps"
     return "cpu"
 
 
-class BARThezSummarizer:
+class MT5Summarizer:
     
-    # générer les résumés avec un modèle BARThez.
-
-    #Utilisation :
-    #    summarizer = BARThezSummarizer()
-    #    summary = summarizer.summarize("Texte de l'article...")
-   
+    #Résumeur basé sur mT5 multilingue .
+    #Sert à la fois de baseline et de modèle à fine-tuner sur MLSUM-sport.
+    
 
     def __init__(self, model_name: str = DEFAULT_MODEL, device: str = None):
         self.model_name = model_name
         self.device = device or get_device()
 
-        print(f" Chargement du modèle {model_name} sur {self.device}...")
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=False)
+        print(f"Chargement du modèle {model_name} sur {self.device}...")
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.model = AutoModelForSeq2SeqLM.from_pretrained(model_name).to(self.device)
         self.model.eval()
-        print(f" Modèle chargé")
+        print(f"Modèle chargé")
 
     def summarize(
         self,
         text: str,
-        max_source_length: int = 1024,
+        max_source_length: int = 512,
         max_target_length: int = 64,
         num_beams: int = 4,
     ) -> str:
-        
-        #Génère un résumé pour un article donné.
-
-        #Args:
-        #    text: l'article à résumer
-        #    max_source_length: longueur max de l'input (en tokens), tronqué si plus 
-        #    max_target_length: longueur max du résumé généré (en tokens)
-        #    num_beams: nombre de beams pour la beam search (qualité vs vitesse)
-
-        #Retourne => Le résumé généré en français
-        
-        # Tokenisation de l'article (avec troncature si trop long)
+        """Génère un résumé pour un article donné."""
         inputs = self.tokenizer(
             text,
             max_length=max_source_length,
@@ -66,23 +58,22 @@ class BARThezSummarizer:
             return_tensors="pt",
         ).to(self.device)
 
-        # Génération avec beam search
         with torch.no_grad():
             output_ids = self.model.generate(
                 **inputs,
                 max_length=max_target_length,
                 num_beams=num_beams,
-                no_repeat_ngram_size=3,  
+                no_repeat_ngram_size=2,
                 early_stopping=True,
             )
-        # Décodage des tokens en texte
+
         summary = self.tokenizer.decode(output_ids[0], skip_special_tokens=True)
         return summary
 
 
 class LLMSummarizer:
+    #Résumeur basé sur CroissantLLM (1.3B de parametre) avec prompting
 
-    # Prompt template — structuré comme un dialogue chat
     PROMPT_TEMPLATE = (
         "<|im_start|>system\n"
         "Tu es un journaliste sportif francophone. "
@@ -115,26 +106,13 @@ class LLMSummarizer:
         max_new_tokens: int = 150,
         temperature: float = 0.3,
     ) -> str:
-        
         #Génère un résumé via prompting.
-        #    text: l'article à résumer
-        #    max_article_chars: tronque l'article si trop long 
-        #    max_new_tokens: longueur max du résumé généré
-        #    temperature: faible = factuel, élevé = créatif. Pour un résumé, on veut bas car one ne veux pas qu'il invente des infos.
-
-        #retourne => Le résumé généré en français
-        
-        # Troncature de l'article pour rester dans la fenêtre de contexte
         article_truncated = text[:max_article_chars]
-
-        # Construction du prompt
         prompt = self.PROMPT_TEMPLATE.format(article=article_truncated)
 
-        # Tokenisation
         inputs = self.tokenizer(prompt, return_tensors="pt").to(self.device)
         prompt_length = inputs["input_ids"].shape[1]
 
-        # Génération
         with torch.no_grad():
             output_ids = self.model.generate(
                 **inputs,
@@ -145,8 +123,6 @@ class LLMSummarizer:
                 pad_token_id=self.tokenizer.eos_token_id,
             )
 
-        # Décodage : on ne garde que la partie générée (pas le prompt)
         generated_ids = output_ids[0][prompt_length:]
         summary = self.tokenizer.decode(generated_ids, skip_special_tokens=True).strip()
-
         return summary
