@@ -12,9 +12,9 @@
 
 Pour répondre, nous comparons trois modele sur la tâche de résumé abstractif d'articles sportifs français :
 
-1. **mT5-small vanilla** (Google) — modèle pré-entraîné multilingue, non spécialisé
-2. **mT5-small fine-tuné** sur MLSUM-sport — (Travail sur le fine-tuning effectué)
-3. **CroissantLLM-Chat** (1.3B params) — LLM bilingue via prompt engineering
+1. **mT5-small vanilla** (Google) -> modèle pré-entraîné multilingue, non spécialisé
+2. **mT5-small fine-tuné** sur MLSUM-sport -> (Travail sur le fine-tuning effectué)
+3. **CroissantLLM-Chat** (1.3B params) -> LLM bilingue via prompt engineering
 
 ---
 
@@ -172,7 +172,7 @@ jupyter notebook notebooks/04_evaluation.ipynb
 
 ## Auteur
 
-**Taoufik Asoufi** — M2 Data Science & Intelligence Artificielle — NEXA (2025-2026)
+**Taoufik Asoufi** / M2 Data Science & Intelligence Artificielle / NEXA (2025-2026)
 
 - Modèle publié : [ArcSin720/mt5-sport-finetuned](https://huggingface.co/ArcSin720/mt5-sport-finetuned)
 - Code source : [github.com/Arcsin720/Sport-News](https://github.com/Arcsin720/Sport-News)
@@ -181,7 +181,7 @@ jupyter notebook notebooks/04_evaluation.ipynb
 
 ## Références
 
-- **MLSUM** : Scialom et al. (2020) — *MLSUM: The Multilingual Summarization Corpus*
-- **mT5** : Xue et al. (2021) — *mT5: A massively multilingual pre-trained text-to-text transformer* (ICML 2021)
-- **CroissantLLM** : Faysse et al. (2024) — *CroissantLLM: A Truly Bilingual French-English Language Model*
-- **ROUGE** : Lin (2004) — *ROUGE: A Package for Automatic Evaluation of Summaries*
+- **MLSUM** : Scialom et al. (2020) - *MLSUM: The Multilingual Summarization Corpus*
+- **mT5** : Xue et al. (2021) - *mT5: A massively multilingual pre-trained text-to-text transformer* (ICML 2021)
+- **CroissantLLM** : Faysse et al. (2024) - *CroissantLLM: A Truly Bilingual French-English Language Model*
+- **ROUGE** : Lin (2004) - *ROUGE: A Package for Automatic Evaluation of Summaries*
