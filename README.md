@@ -13,7 +13,7 @@
 Pour répondre, nous comparons trois modele sur la tâche de résumé abstractif d'articles sportifs français :
 
 1. **mT5-small vanilla** (Google) — modèle pré-entraîné multilingue, non spécialisé
-2. **mT5-small fine-tuné** sur MLSUM-sport — notre contribution
+2. **mT5-small fine-tuné** sur MLSUM-sport — (Travail sur le fine-tuning effectué)
 3. **CroissantLLM-Chat** (1.3B params) — LLM bilingue via prompt engineering
 
 ---
