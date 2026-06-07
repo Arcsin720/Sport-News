@@ -8,7 +8,7 @@ Projet réalisé dans le cadre du cours **Large Language Models** (M2 Data Scien
 
 ## Problématique
 
-Est-ce qu'un modèle seq2seq spécialisé fine-tuné sur un domaine restreint (sport) peut dépasser les performances d'un LLM généraliste de dernière génération sur la tâche de résumé en français des article de sports ?
+Le fine-tuning d'un modèle pré-entraîné de résumé français (BARThez) sur le sous-domaine sport améliore-t-il la qualité des résumés générés, mesurée par les métriques ROUGE ?
 
 ## Approche
 
@@ -18,7 +18,6 @@ Comparaison de trois modèles sur le dataset **MLSUM-FR** filtré sur les topics
 |---|---|---|
 | `barthez-orangesum-abstract` | Pré-entraîné (FR, résumé) | Baseline |
 | `barthez-sport` (fine-tuné) | Spécialisé sport | Contribution |
-| LLM via API | Généraliste  | Référence haute |
 
 Évaluation par métriques **ROUGE-1, ROUGE-2, ROUGE-L**.
 
